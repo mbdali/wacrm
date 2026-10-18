@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "nature",
   "violet",
   "emerald",
   "cobalt",
@@ -23,7 +24,7 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "nature";
 
 export const STORAGE_KEY = "wacrm.theme";
 
@@ -67,6 +68,12 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
+  {
+    id: "nature",
+    name: "Nature",
+    tagline: "Earthy, organic forest tones with warm natural surfaces.",
+    swatch: "oklch(0.52 0.13 144.33)",
+  },
   {
     id: "violet",
     name: "Violet",
