@@ -14,6 +14,7 @@ import {
   STORAGE_KEY,
   THEME_IDS,
 } from "@/lib/themes";
+import { BRAND } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -30,16 +31,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const metadata: Metadata = {
   title: {
-    default: "wacrm",
-    template: "%s — wacrm",
+    default: BRAND.name,
+    template: `%s — ${BRAND.name}`,
   },
   robots: {
     index: false,
     follow: false,
   },
-  icons: {
-    icon: [{ url: "/icon" }],
-  },
+  // Icons come from the src/app/icon.png + apple-icon.png file conventions.
   formatDetection: {
     email: false,
     address: false,

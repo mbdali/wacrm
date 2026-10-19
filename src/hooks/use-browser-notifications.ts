@@ -3,6 +3,7 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { BRAND } from "@/lib/brand";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "@/types";
 import {
@@ -105,7 +106,7 @@ export function useBrowserNotifications(): void {
           // One alert per conversation: a second message from the same
           // customer replaces the first instead of stacking.
           tag: msg.conversation_id,
-          icon: "/icon",
+          icon: BRAND.logo,
         });
         notification.onclick = () => {
           window.focus();

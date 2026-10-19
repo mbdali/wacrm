@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore } from 'react';
 import { Bell, BellRing, CircleAlert, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { BRAND } from '@/lib/brand';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -88,7 +89,7 @@ export function BrowserNotificationsCard({ className }: { className?: string }) 
     try {
       new Notification(t('testTitle'), {
         body: t('testBody'),
-        icon: '/icon',
+        icon: BRAND.logo,
         tag: 'wacrm-test-notification',
       });
     } catch {
