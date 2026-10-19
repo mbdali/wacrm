@@ -5,8 +5,15 @@
 #   sh stack.sh --profile admin up -d     # + Supabase Studio
 set -eu
 cd "$(dirname "$0")"
+
+files="-f docker-compose.stack.yml"
+if grep -qE '^BEHIND_PROXY=true' .env.stack 2>/dev/null; then
+  files="$files -f deploy/behind-proxy.yml"
+fi
+
+# shellcheck disable=SC2086
 exec docker compose \
-  -f docker-compose.stack.yml \
+  $files \
   --env-file ../supabase/docker/.env \
   --env-file .env.stack \
   "$@"

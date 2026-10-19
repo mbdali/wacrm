@@ -1,0 +1,57 @@
+# Trims the stock self-hosted Supabase compose file down to what this app
+# uses: db, auth, rest (PostgREST + RPC), realtime, storage and the api-gw
+# gateway. Everything else is switched off via profiles. Layered on top of
+# ../supabase/docker/docker-compose.yml (see docker-compose.stack.yml), so
+# that file stays stock and `git pull` there keeps working.
+#
+#   Studio UI:  sh stack.sh --profile admin up -d   -> http://localhost:8000
+
+services:
+
+  # Admin UI only — not needed at runtime.
+  studio:
+    profiles: ["admin"]
+
+  meta:
+    profiles: ["admin"]
+
+  # No edge functions.
+  functions:
+    profiles: ["functions"]
+
+  # No image transformations.
+  imgproxy:
+    profiles: ["imgproxy"]
+
+  # Connection pooler — not needed for a single app talking through PostgREST.
+  supavisor:
+    profiles: ["pooler"]
+
+  api-gw:
+    # Stock file waits for Studio to be healthy; drop that.
+    depends_on: !reset {}
+    # Localhost only. Docker-published ports bypass host firewalls (ufw),
+    # and the public path is through Caddy anyway.
+    ports: !override
+      - 127.0.0.1:${API_GW_HTTP_PORT:-8000}:8000
+
+  storage:
+    depends_on: !override
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    environment:
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+
+  db:
+    # Supavisor used to publish the Postgres port. Publish it on localhost
+    # only, for psql and backups from the host.
+    ports:
+      - 127.0.0.1:${DB_HOST_PORT:-5432}:${POSTGRES_PORT}
+
+volumes:
+  # Holds the pgsodium key. Pinned name so it survives a change of compose
+  # project name.
+  db-config:
+    name: supabase_db-config

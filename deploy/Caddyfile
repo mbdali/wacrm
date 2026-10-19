@@ -1,6 +1,15 @@
+{
+	servers {
+		# Keep X-Forwarded-Proto/For from a proxy in front (nginx on the
+		# host reaches Caddy from a private Docker address).
+		trusted_proxies static private_ranges
+	}
+}
+
 # SITE_ADDRESS is PUBLIC_URL from .env.stack.
 #   http://raqmichats.localhost:8080  -> plain HTTP on 8080 (local)
 #   https://raqmichats.com            -> automatic Let's Encrypt HTTPS
+# Behind nginx (deploy/behind-proxy.yml) it is http://PUBLIC_HOST:HTTP_PORT.
 {$SITE_ADDRESS} {
 	@supabase path /auth/v1/* /rest/v1/* /realtime/v1/* /storage/v1/*
 	handle @supabase {
@@ -15,5 +24,5 @@
 # localhost / 127.0.0.1 -> the public address. The app only works on
 # PUBLIC_URL (it's baked into the build), so send people there.
 http://localhost:{$HTTP_PORT}, http://127.0.0.1:{$HTTP_PORT} {
-	redir {$SITE_ADDRESS}{uri}
+	redir {$PUBLIC_URL}{uri}
 }

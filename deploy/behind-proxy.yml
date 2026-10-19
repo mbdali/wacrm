@@ -1,0 +1,22 @@
+# Layered on docker-compose.stack.yml when BEHIND_PROXY=true in
+# .env.stack: another web server on the host (e.g. nginx) owns ports
+# 80/443 and terminates TLS, then forwards PUBLIC_HOST to Caddy on
+# 127.0.0.1:HTTP_PORT. See deploy/nginx-site.conf.
+
+services:
+  app:
+    # Server-side calls to https://PUBLIC_HOST go straight to nginx on the
+    # host instead of out to the public IP and back.
+    extra_hosts:
+      - ${PUBLIC_HOST}:host-gateway
+
+  caddy:
+    ports: !override
+      - 127.0.0.1:${HTTP_PORT}:${HTTP_PORT}
+    environment:
+      # Plain HTTP for PUBLIC_HOST; nginx already did TLS.
+      SITE_ADDRESS: http://${PUBLIC_HOST}:${HTTP_PORT}
+    # No PUBLIC_HOST alias: Caddy has no certificate here, so the app's
+    # server-side calls to https://PUBLIC_HOST must go out through nginx.
+    networks: !override
+      default: {}
