@@ -43,6 +43,11 @@ services:
         condition: service_started
     environment:
       ENABLE_IMAGE_TRANSFORMATION: "false"
+    # First boot runs storage's own schema migrations, which can outlast
+    # the stock ~25s health window on a small droplet.
+    healthcheck:
+      start_period: 120s
+      retries: 10
 
   db:
     # Supavisor used to publish the Postgres port. Publish it on localhost
