@@ -1,0 +1,19 @@
+# SITE_ADDRESS is PUBLIC_URL from .env.stack.
+#   http://raqmichats.localhost:8080  -> plain HTTP on 8080 (local)
+#   https://raqmichats.com            -> automatic Let's Encrypt HTTPS
+{$SITE_ADDRESS} {
+	@supabase path /auth/v1/* /rest/v1/* /realtime/v1/* /storage/v1/*
+	handle @supabase {
+		reverse_proxy api-gw:8000
+	}
+
+	handle {
+		reverse_proxy app:3000
+	}
+}
+
+# localhost / 127.0.0.1 -> the public address. The app only works on
+# PUBLIC_URL (it's baked into the build), so send people there.
+http://localhost:{$HTTP_PORT}, http://127.0.0.1:{$HTTP_PORT} {
+	redir {$SITE_ADDRESS}{uri}
+}

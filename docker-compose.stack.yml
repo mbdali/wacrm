@@ -1,0 +1,120 @@
+# Full stack in one compose project: trimmed Supabase + RaqmiChats app +
+# Caddy in front of both on a single origin.
+#
+# Requires the Supabase docker setup at ../supabase/docker, with
+# docker-compose.wacrm.yml (the trimmed override) next to it. Those files
+# are included unmodified, so `git pull` there keeps working.
+#
+# Usage (see docs/stack.md)
+#   cp .env.stack.example .env.stack     # then fill it in
+#   sh stack.sh up -d --build
+#   sh stack.sh logs -f app
+#   sh stack.sh down
+#
+# Browser and app container both reach everything at PUBLIC_URL:
+#   PUBLIC_URL/                         -> app
+#   PUBLIC_URL/{auth,rest,realtime,storage}/v1/*  -> Supabase gateway
+# Caddy carries PUBLIC_HOST as a network alias, so the same URL resolves
+# to Caddy from inside the app container too.
+
+name: raqmichats
+
+include:
+  - path:
+      - ../supabase/docker/docker-compose.yml
+      - ../supabase/docker/docker-compose.wacrm.yml
+    env_file:
+      - ../supabase/docker/.env
+      - .env.stack
+
+services:
+
+  # One-shot: applies supabase/migrations/*.sql that haven't run yet.
+  # Waits for auth and storage so their own schemas exist first.
+  migrate:
+    image: postgres:18-alpine
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: ${POSTGRES_PORT}
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      MIGRATIONS_BASELINE: ${MIGRATIONS_BASELINE:-}
+    volumes:
+      - ./supabase/migrations:/migrations:ro
+      - ./deploy/migrate.sh:/migrate.sh:ro
+    entrypoint: ["sh", "/migrate.sh"]
+
+  app:
+    build:
+      context: .
+      # NEXT_PUBLIC_* are inlined at build time — changing PUBLIC_URL or
+      # the anon key needs a rebuild (up --build).
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${PUBLIC_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL}
+        NEXT_PUBLIC_APP_LOCALE: ${APP_LOCALE:-en}
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_SUPABASE_URL: ${PUBLIC_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+      NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL}
+      NEXT_PUBLIC_APP_LOCALE: ${APP_LOCALE:-en}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      META_APP_SECRET: ${META_APP_SECRET}
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000').then((r)=>process.exit(r.ok||r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+      api-gw:
+        condition: service_healthy
+    ports:
+      # Caddy listens on HTTP_PORT inside the container too, so PUBLIC_URL
+      # (with its port) works identically from the host and the network.
+      - ${HTTP_PORT:-80}:${HTTP_PORT:-80}
+      - ${HTTPS_PORT:-443}:443
+      - ${HTTPS_PORT:-443}:443/udp
+    environment:
+      SITE_ADDRESS: ${PUBLIC_URL}
+      HTTP_PORT: ${HTTP_PORT:-80}
+    networks:
+      default:
+        aliases:
+          - ${PUBLIC_HOST}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
