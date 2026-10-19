@@ -10,7 +10,7 @@ import {
 import { applyInboxFilter, type InboxFilter } from "@/lib/inbox/inbox-filters";
 import { cn } from "@/lib/utils";
 import type { Conversation, ConversationStatus, Tag } from "@/types";
-import { Search, ChevronDown, X } from "lucide-react";
+import { Search, ChevronDown, Loader2, MessageSquarePlus, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toDialablePhone } from "@/lib/whatsapp/phone-utils";
 
 interface ConversationListProps {
   activeConversationId: string | null;
@@ -36,6 +37,12 @@ interface ConversationListProps {
    */
   resyncToken?: number;
   initialFilter?: InboxFilter;
+  /**
+   * Start a chat with a number typed into the search that matches no
+   * conversation (find-or-creates contact + thread). Resolves true once
+   * the thread is open. Omit to hide the "Chat with +…" row.
+   */
+  onStartChat?: (phone: string) => Promise<boolean>;
 }
 
 const STATUS_COLORS: Record<ConversationStatus, string> = {
@@ -52,6 +59,7 @@ export function ConversationList({
   onConversationsLoaded,
   resyncToken = 0,
   initialFilter = "all",
+  onStartChat,
 }: ConversationListProps) {
   const t = useTranslations("Inbox.conversationList");
   
@@ -192,6 +200,30 @@ export function ConversationList({
 
     return result;
   }, [conversations, filter, now, search, selectedTagIds, selectedCompany]);
+
+  // A full number with country code that no loaded conversation has yet:
+  // offer to start a chat with it, like WhatsApp Web's search.
+  const newChatPhone = useMemo(() => {
+    if (!onStartChat) return null;
+    const phone = toDialablePhone(search);
+    if (!phone) return null;
+    const digits = phone.slice(1);
+    const known = conversations.some(
+      (c) => (c.contact?.phone ?? "").replace(/\D/g, "") === digits,
+    );
+    return known ? null : phone;
+  }, [onStartChat, search, conversations]);
+
+  const [startingChat, setStartingChat] = useState(false);
+  const handleStartChat = useCallback(async () => {
+    if (!onStartChat || !newChatPhone || startingChat) return;
+    setStartingChat(true);
+    try {
+      if (await onStartChat(newChatPhone)) setSearch("");
+    } finally {
+      setStartingChat(false);
+    }
+  }, [onStartChat, newChatPhone, startingChat]);
 
   const toggleTag = useCallback((id: string) => {
     setSelectedTagIds((prev) =>
@@ -400,11 +432,35 @@ export function ConversationList({
           space — the list then overflows and gets clipped by the
           parent's overflow-hidden with no scrollbar (issue #229). */}
       <ScrollArea className="min-h-0 flex-1">
+        {newChatPhone && (
+          <button
+            type="button"
+            onClick={handleStartChat}
+            disabled={startingChat}
+            className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left hover:bg-muted/50 disabled:opacity-60"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              {startingChat ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MessageSquarePlus className="h-4 w-4" />
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium text-foreground">
+                {t("startChat", { phone: newChatPhone })}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {t("startChatHint")}
+              </span>
+            </span>
+          </button>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : filtered.length === 0 && !newChatPhone ? (
           <div className="px-4 py-12 text-center">
             <p className="text-sm text-muted-foreground">{t("noConversations")}</p>
           </div>

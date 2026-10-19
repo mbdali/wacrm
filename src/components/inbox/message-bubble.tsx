@@ -38,6 +38,7 @@ import {
   type TemplateMessageHeader,
 } from "@/lib/whatsapp/template-message-view";
 import { useTranslations } from "next-intl";
+import { PhoneText } from "./phone-text";
 
 interface MessageBubbleProps {
   message: Message;
@@ -183,7 +184,7 @@ function MessageContent({
     case "text":
       return (
         <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text}
+          <PhoneText text={message.content_text} />
         </p>
       );
 
@@ -197,7 +198,7 @@ function MessageContent({
           )}
           {message.content_text && (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <PhoneText text={message.content_text} />
             </p>
           )}
         </div>
@@ -213,7 +214,7 @@ function MessageContent({
           )}
           {message.content_text && (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <PhoneText text={message.content_text} />
             </p>
           )}
         </div>
@@ -263,7 +264,7 @@ function MessageContent({
           )}
           {message.content_text ? (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <PhoneText text={message.content_text} />
             </p>
           ) : (
             message.template_name && (

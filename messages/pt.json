@@ -330,7 +330,8 @@
   },
   "Inbox": {
     "page": {
-      "whatsappNotConnected": "O WhatsApp® não está conectado. Vá em Configurações para conectar sua conta."
+      "whatsappNotConnected": "O WhatsApp® não está conectado. Vá em Configurações para conectar sua conta.",
+      "startChatFailed": "Não foi possível abrir uma conversa com {phone}: {reason}"
     },
     "conversationList": {
       "searchPlaceholder": "Buscar conversas...",
@@ -348,7 +349,9 @@
       "clearAll": "Limpar tudo",
       "noConversations": "Nenhuma conversa encontrada",
       "noMessagesYet": "Nenhuma mensagem ainda",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "startChat": "Conversar com {phone}",
+      "startChatHint": "Número novo: abra a conversa e envie um modelo"
     },
     "messageThread": {
       "backToConversations": "Voltar às conversas",
@@ -456,7 +459,8 @@
       "downloadFailed": "Não foi possível baixar o anexo",
       "viewImage": "Ver imagem",
       "expandVideo": "Expandir vídeo",
-      "imageAlt": "Imagem compartilhada"
+      "imageAlt": "Imagem compartilhada",
+      "chatWith": "Conversar com {phone}"
     },
     "mediaViewer": {
       "counter": "{index} de {total}",
@@ -479,7 +483,8 @@
       "reactWith": "Reagir com {emoji}",
       "nothingToCopy": "Nada para copiar",
       "copied": "Copiado",
-      "copyFailed": "Falha ao copiar"
+      "copyFailed": "Falha ao copiar",
+      "forward": "Encaminhar"
     },
     "replyQuote": {
       "photo": "[Foto]",
@@ -528,6 +533,15 @@
       "resumed": "IA retomada.",
       "updateError": "Não foi possível atualizar o assistente de IA.",
       "networkError": "Não foi possível conectar ao servidor."
+    },
+    "forward": {
+      "title": "Encaminhar mensagem",
+      "hint": "Somente conversas com a janela de 24 horas aberta podem receber uma mensagem encaminhada.",
+      "searchPlaceholder": "Buscar conversas",
+      "noResults": "Nenhuma conversa encontrada",
+      "windowClosed": "Janela de 24 h fechada: é preciso um modelo",
+      "sent": "Encaminhado para {name}",
+      "failed": "Não foi possível encaminhar: {reason}"
     }
   },
   "Contacts": {
@@ -2922,6 +2936,9 @@
       "submitFailed": "Falha ao enviar o modelo.",
       "metaApiStatus": "Erro da API da Meta: {status}",
       "syncFailed": "Falha ao sincronizar os modelos"
+    },
+    "startChat": {
+      "invalidPhone": "Informe um número de telefone com o código do país, ex.: +971501234567"
     }
   }
 }

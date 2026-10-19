@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { CornerUpLeft, Copy, SmilePlus } from "lucide-react";
+import { CornerUpLeft, Copy, Forward, SmilePlus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/popover";
 import type { Message } from "@/types";
 import { useTranslations } from "next-intl";
+import { forwardPayload } from "@/lib/inbox/forward";
+import { useInboxChat } from "./inbox-chat-context";
 
 // WhatsApp's own quick-reaction bar starts with these six. Picking the same
 // set keeps the affordance familiar without pulling in a 300KB emoji library.
@@ -35,6 +37,8 @@ export function MessageActions({
   children,
 }: MessageActionsProps) {
   const t = useTranslations("Inbox.actions");
+  const chat = useInboxChat();
+  const canForward = !!chat && forwardPayload(message) !== null;
 
   // Touch devices have no hover. Long-press fires `contextmenu`; we capture
   // it, suppress the native menu, and pin the toolbar open until the user
@@ -73,6 +77,11 @@ export function MessageActions({
 
   const handleReply = () => {
     onReply();
+    setTouchOpen(false);
+  };
+
+  const handleForward = () => {
+    chat?.forwardMessage(message);
     setTouchOpen(false);
   };
 
@@ -144,6 +153,16 @@ export function MessageActions({
         >
           <Copy className="h-3.5 w-3.5" />
         </button>
+        {canForward && (
+          <button
+            type="button"
+            onClick={handleForward}
+            className="flex h-5 w-5 items-center justify-center rounded-full text-popover-foreground hover:bg-muted hover:text-foreground"
+            aria-label={t("forward")}
+          >
+            <Forward className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       </div>
     </div>

@@ -330,7 +330,8 @@
   },
   "Inbox": {
     "page": {
-      "whatsappNotConnected": "WhatsApp® no está conectado. Ve a Configuración para conectar tu cuenta."
+      "whatsappNotConnected": "WhatsApp® no está conectado. Ve a Configuración para conectar tu cuenta.",
+      "startChatFailed": "No se pudo abrir un chat con {phone}: {reason}"
     },
     "conversationList": {
       "searchPlaceholder": "Buscar conversaciones...",
@@ -348,7 +349,9 @@
       "clearAll": "Limpiar todo",
       "noConversations": "No se encontraron conversaciones",
       "noMessagesYet": "Aún no hay mensajes",
-      "unknown": "Desconocido"
+      "unknown": "Desconocido",
+      "startChat": "Chatear con {phone}",
+      "startChatHint": "Número nuevo: abre el chat y envía una plantilla"
     },
     "messageThread": {
       "backToConversations": "Volver a las conversaciones",
@@ -456,7 +459,8 @@
       "downloadFailed": "No se pudo descargar el adjunto",
       "viewImage": "Ver imagen",
       "expandVideo": "Ampliar video",
-      "imageAlt": "Imagen compartida"
+      "imageAlt": "Imagen compartida",
+      "chatWith": "Chatear con {phone}"
     },
     "mediaViewer": {
       "counter": "{index} de {total}",
@@ -479,7 +483,8 @@
       "reactWith": "Reaccionar con {emoji}",
       "nothingToCopy": "Nada que copiar",
       "copied": "Copiado",
-      "copyFailed": "Error al copiar"
+      "copyFailed": "Error al copiar",
+      "forward": "Reenviar"
     },
     "replyQuote": {
       "photo": "[Foto]",
@@ -528,6 +533,15 @@
       "resumed": "IA reanudada.",
       "updateError": "No se pudo actualizar el asistente de IA.",
       "networkError": "No se pudo conectar con el servidor."
+    },
+    "forward": {
+      "title": "Reenviar mensaje",
+      "hint": "Solo los chats con la ventana de 24 horas abierta pueden recibir un mensaje reenviado.",
+      "searchPlaceholder": "Buscar chats",
+      "noResults": "No se encontraron chats",
+      "windowClosed": "Ventana de 24 h cerrada: se necesita una plantilla",
+      "sent": "Reenviado a {name}",
+      "failed": "No se pudo reenviar: {reason}"
     }
   },
   "Contacts": {
@@ -2922,6 +2936,9 @@
       "submitFailed": "Error al enviar la plantilla.",
       "metaApiStatus": "Error de la API de Meta: {status}",
       "syncFailed": "Error al sincronizar las plantillas"
+    },
+    "startChat": {
+      "invalidPhone": "Introduce un número de teléfono con su código de país, p. ej. +971501234567"
     }
   }
 }

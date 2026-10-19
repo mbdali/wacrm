@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useCallback, useEffect, useRef } from "react";
+import { Suspense, useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,11 @@ import { ConversationList } from "@/components/inbox/conversation-list";
 import { parseInboxFilter } from "@/lib/inbox/inbox-filters";
 import { MessageThread } from "@/components/inbox/message-thread";
 import { ContactSidebar } from "@/components/inbox/contact-sidebar";
+import { ForwardDialog } from "@/components/inbox/forward-dialog";
+import {
+  InboxChatContext,
+  type InboxChatActions,
+} from "@/components/inbox/inbox-chat-context";
 import { toast } from "sonner";
 import { WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -558,6 +563,62 @@ function InboxPageInner() {
     [activeConversation]
   );
 
+  /**
+   * Open the chat for a phone number — typed into the list search or
+   * clicked in a message — creating the contact and conversation when the
+   * number is new. The thread then offers templates, since a new number
+   * has no 24h window yet.
+   */
+  const handleStartChat = useCallback(
+    async (phone: string): Promise<boolean> => {
+      const fail = (reason: string) => {
+        toast.error(t("startChatFailed", { phone, reason }));
+        return false;
+      };
+      try {
+        const res = await fetch("/api/whatsapp/conversations/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || typeof json.conversation_id !== "string") {
+          return fail(json.error ?? res.statusText);
+        }
+        const convId: string = json.conversation_id;
+
+        let conv = conversations.find((c) => c.id === convId);
+        if (!conv) {
+          const supabase = createClient();
+          const { data, error } = await supabase
+            .from("conversations")
+            .select(CONVERSATION_SELECT)
+            .eq("id", convId)
+            .maybeSingle();
+          if (error || !data) return fail(error?.message ?? "not found");
+          const fetched = normalizeConversation(data);
+          // The realtime INSERT may have added it meanwhile.
+          setConversations((prev) =>
+            prev.some((c) => c.id === fetched.id) ? prev : [fetched, ...prev],
+          );
+          conv = fetched;
+        }
+        handleSelectConversation(conv);
+        return true;
+      } catch (err) {
+        return fail(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [conversations, handleSelectConversation, t],
+  );
+
+  const [forwarding, setForwarding] = useState<Message | null>(null);
+
+  const chatActions = useMemo<InboxChatActions>(
+    () => ({ startChatWithPhone: handleStartChat, forwardMessage: setForwarding }),
+    [handleStartChat],
+  );
+
   // On mobile (<lg) we show a SINGLE pane — either the list or the
   // thread — rather than cramming both side-by-side. Selecting a
   // conversation slides the thread in; the thread's back button pops
@@ -566,6 +627,7 @@ function InboxPageInner() {
   const hasActiveConv = !!activeConversation;
 
   return (
+    <InboxChatContext.Provider value={chatActions}>
     <div className="-m-4 flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden sm:-m-6">
       {/* WhatsApp connection banner — in the flex column, not absolute,
           so it pushes the panels down instead of overlapping them. */}
@@ -595,6 +657,7 @@ function InboxPageInner() {
             onConversationsLoaded={handleConversationsLoaded}
             resyncToken={resyncToken}
             initialFilter={parseInboxFilter(searchParams.get("filter"))}
+            onStartChat={handleStartChat}
           />
         </div>
 
@@ -642,6 +705,14 @@ function InboxPageInner() {
           </div>
         )}
       </div>
+
+      <ForwardDialog
+        message={forwarding}
+        conversations={conversations}
+        sourceConversationId={activeConversation?.id}
+        onClose={() => setForwarding(null)}
+      />
     </div>
+    </InboxChatContext.Provider>
   );
 }

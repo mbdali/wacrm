@@ -86,6 +86,25 @@ export function parseInternationalPhone(raw: string | null | undefined): string 
 }
 
 /**
+ * A number an agent typed or clicked to start a chat: "+971 50 123 4567",
+ * "00971501234567" or "971501234567". Returns "+<digits>" (the form
+ * `resolveConversationByPhone` takes) or null.
+ *
+ * Unlike `parseInternationalPhone`, a missing `+` is assumed rather than
+ * rejected: the agent is deliberately dialling, and the start-chat UI
+ * asks for the country code. A national-format number still fails here
+ * only if it isn't a plausible international one.
+ */
+export function toDialablePhone(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  let compact = raw.trim().replace(/[\s().-]/g, '')
+  if (compact.startsWith('00')) compact = `+${compact.slice(2)}`
+  if (!compact.startsWith('+')) compact = `+${compact}`
+  const digits = parseInternationalPhone(compact)
+  return digits ? `+${digits}` : null
+}
+
+/**
  * Generate plausible phone number variants for retry when Meta's
  * sandbox rejects a number with error #131030 ("not in allowed list").
  *

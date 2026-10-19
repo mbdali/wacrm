@@ -330,10 +330,11 @@
   },
   "Inbox": {
     "page": {
-      "whatsappNotConnected": "WhatsApp® is not connected. Go to Settings to connect your account."
+      "whatsappNotConnected": "WhatsApp® is not connected. Go to Settings to connect your account.",
+      "startChatFailed": "Couldn't open a chat with {phone}: {reason}"
     },
     "conversationList": {
-      "searchPlaceholder": "Search conversations...",
+      "searchPlaceholder": "Search or enter a number with country code",
       "filterAll": "All",
       "filterUnread": "Unread",
       "filterWaiting": "Waiting for reply",
@@ -348,7 +349,9 @@
       "clearAll": "Clear all",
       "noConversations": "No conversations found",
       "noMessagesYet": "No messages yet",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "startChat": "Chat with {phone}",
+      "startChatHint": "New number: open the chat and send a template"
     },
     "messageThread": {
       "backToConversations": "Back to conversations",
@@ -456,7 +459,8 @@
       "downloadFailed": "Couldn't download the attachment",
       "viewImage": "View image",
       "expandVideo": "Expand video",
-      "imageAlt": "Shared image"
+      "imageAlt": "Shared image",
+      "chatWith": "Chat with {phone}"
     },
     "mediaViewer": {
       "counter": "{index} of {total}",
@@ -479,7 +483,8 @@
       "reactWith": "React with {emoji}",
       "nothingToCopy": "Nothing to copy",
       "copied": "Copied",
-      "copyFailed": "Copy failed"
+      "copyFailed": "Copy failed",
+      "forward": "Forward"
     },
     "replyQuote": {
       "photo": "[Photo]",
@@ -528,6 +533,15 @@
       "resumed": "AI resumed.",
       "updateError": "Couldn’t update the AI assistant.",
       "networkError": "Couldn’t reach the server."
+    },
+    "forward": {
+      "title": "Forward message",
+      "hint": "Only chats with an open 24-hour window can receive a forwarded message.",
+      "searchPlaceholder": "Search chats",
+      "noResults": "No chats found",
+      "windowClosed": "24h window closed: template needed",
+      "sent": "Forwarded to {name}",
+      "failed": "Couldn't forward: {reason}"
     }
   },
   "Contacts": {
@@ -2922,6 +2936,9 @@
       "submitFailed": "Failed to submit template.",
       "metaApiStatus": "Meta API error: {status}",
       "syncFailed": "Failed to sync templates"
+    },
+    "startChat": {
+      "invalidPhone": "Enter a phone number with its country code, e.g. +971501234567"
     }
   }
 }
